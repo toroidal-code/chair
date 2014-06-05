@@ -6,7 +6,6 @@ rvm:
   - ruby-1.9
   - jruby-19mode
   - rbx-2
-  - ree
 
 addons:
   code_climate:
