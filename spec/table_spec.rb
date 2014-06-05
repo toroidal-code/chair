@@ -31,43 +31,50 @@ describe Table do
   it 'adds a column' do
     table = Table.new
     expect {
-      table.add_column(:title)
+      table.add_column!(:title)
     }.to change{ table.columns.count }.by(1)
+  end
+
+  it 'doesn\'t a column with the same name' do
+    table = Table.new :title
+    expect {
+      table.add_column!(:title)
+    }.to_not change{ table.columns.count }
   end
 
   it 'adds multiple columns' do
     table = Table.new
     expect {
-      table.add_columns :title, :author
-    }
+      table.add_columns! :title, :author
+    }.to change {table.columns.count}.by(2)
   end
 
   it 'inserts a row' do
     table = Table.new :title
     expect {
-      table.insert({title: "Gone with the Wind"})
+      table.insert!({title: "Gone with the Wind"})
     }.to change { table.size }.by(1)
   end
 
   it 'sets the primary key' do
     table = Table.new :title
     expect {
-      table.set_primary_key :title
+      table.set_primary_key! :title
     }.to change {table.primary_key}.from(nil).to(:title)
   end
 
   it 'adds an index' do
     table = Table.new :title
     expect {
-      table.add_index :title
+      table.add_index! :title
     }.to change {table.indices.size}.by(1)
   end
 
   it 'deletes an index' do
     table = Table.new :title
-    table.add_index :title
+    table.add_index! :title
     expect {
-      table.remove_index :title
+      table.remove_index! :title
     }.to change {table.indices.size}.by(-1)
   end
 end

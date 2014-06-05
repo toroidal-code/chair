@@ -1,6 +1,7 @@
 class Row
 
-  def initialize(table)
+  def initialize(table, id)
+    @row_id = id
     @table = table
     @row = []
   end
@@ -12,6 +13,13 @@ class Row
 
   def []=(col, value)
     idx = @table.send(:get_column_id, col)
+    if @table.indices.include? col
+      if @table.instance_variable_get("@#{col}_index_map".to_sym)[value].nil?
+        @table.instance_variable_get("@#{col}_index_map".to_sym)[value] = Set.new
+      end
+      @table.instance_variable_get("@#{col}_index_map")[value] =
+          @table.instance_variable_get("@#{col}_index_map")[value] << @row_id
+    end
     @row[idx] = value
   end
 
@@ -35,5 +43,4 @@ class Row
   def eql?(other)
     @row.eql?(other.instance_variable_get("@row"))
   end
-
 end

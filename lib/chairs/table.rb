@@ -8,62 +8,86 @@ class Table
     @table = []
     @columns = {}
     @columns_id_counter = 0
-    add_columns(*columns)
+    add_columns!(*columns)
     @primary_key = nil
     @indices = Set.new
   end
 
   # @param [String] column the column name to add
-  def add_column(column)
+  def add_column!(column)
     case column
     when Symbol
     else
       raise ArgumentError, "Column name should be Symbol not #{column.class}"
     end
-    @columns[column] = @columns_id_counter
-    @columns_id_counter += 1
+
+    if @columns.include? column
+      false
+    else
+      @columns[column] = @columns_id_counter
+      @columns_id_counter += 1
+      true
+    end
   end
 
-  def add_columns(*columns)
-    columns.each { |c| add_column c }
+  def add_columns!(*columns)
+    columns.each { |c| add_column! c }
   end
 
   def columns
     @columns.keys
   end
 
-  def add_index(column)
+  def add_index!(column)
+    result = false
+    get_column_id(column)
     unless instance_variable_defined?("@#{column}_index_map".to_sym)
       instance_variable_set("@#{column}_index_map".to_sym, {})
+      result ||= true
     end
 
     unless @indices.include? column
       @indices = @indices << column
+      result ||= true
     end
+
+
+    @table.each_with_index do |row, idx|
+      val = row[column]
+      unless val.nil?
+        if instance_variable_get("@#{column}_index_map".to_sym)[val].nil?
+          instance_variable_get("@#{column}_index_map".to_sym)[val] = Set.new
+        end
+        instance_variable_get("@#{column}_index_map".to_sym)[val] =
+            instance_variable_get("@#{column}_index_map".to_sym)[val] << idx
+      end
+    end
+    result
   end
 
-  def remove_index(column)
+  def remove_index!(column)
+    result = false
     if instance_variable_defined?("@#{column}_index_map".to_sym)
       remove_instance_variable("@#{column}_index_map")
+      result ||= true
     end
-
     if @indices.include? column
       @indices = @indices.delete column
+      result ||= true
     end
+    result
   end
 
   # @param [Hash] options the columns to insert
-  def insert(options = {})
-    row = Row.new(self)
+  def insert!(options = {})
+    row = Row.new(self, @table.size)
     options.each_pair do |col, value|
       # If there's a primary_key defined
       if has_primary_key? and columns.include? col and @primary_key == col
         @pk_map[value] = @table.size
       end
 
-      if @indices.include? col
-        instance_variable_get("@#{col}_index_map".to_sym)[value] = @table.size
-      end
+
       row[col] = value
     end
     unless row.empty?
@@ -72,7 +96,6 @@ class Table
     end
   end
 
-  # Define on self, since it's  a class method
   def method_missing(method_sym, *arguments, &block)
     # the first argument is a Symbol, so you need to_s it if you want to pattern match
     if method_sym.to_s =~ /^find_by_(.*)$/
@@ -103,7 +126,7 @@ class Table
     # Try and find a primary key
     if has_primary_key? and options.keys.include? @primary_key
       idx = @pk_map[options[@primary_key]]
-      return @table[idx]
+      return [@table[idx]]
     end
     indexed_cols = find_valid_indices(options.keys)
 
@@ -121,7 +144,7 @@ class Table
     options = options.reject { |col, val| indexed_cols.include? col }
     #slow O(N) find
     options.each_pair do |col, val|
-      restrict_with_table_scan(col, val, results)
+      results = restrict_with_table_scan(col, val, results)
     end
     results.to_a
   end
@@ -130,7 +153,6 @@ class Table
     where(options).first
   end
 
-
   def table_scan(options)
     results = table
     options.each_pair do |col, value|
@@ -138,9 +160,9 @@ class Table
     end
   end
 
-  def set_primary_key(column)
+  def set_primary_key!(column)
     unless @columns.has_key? column
-      raise ArgumentError, 'No such column by that name'
+      return nil
     end
     @pk_map = {}
     @primary_key = column
@@ -154,7 +176,7 @@ class Table
   def get_column_id(name)
     id = @columns[name]
     if id.nil?
-      raise ArgumentError, 'No such column by that name'
+      raise ArgumentError, "No such column #{name}"
     end
     id
   end
@@ -178,7 +200,7 @@ class Table
   end
 
   def restrict_with_table_scan(col, value, initial=@table.to_set)
-    initial.keep_if { |row| row[get_column_id(col)] == value }
+    initial.keep_if { |row| row[col] == value }
   end
 
   def select(col, table = @table, &block)
@@ -187,5 +209,4 @@ class Table
       block(col)
     end
   end
-
 end

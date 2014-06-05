@@ -3,8 +3,10 @@
 [![Code Climate](https://img.shields.io/codeclimate/github/toroidal-code/chairs.png?style=flat)](https://codeclimate.com/github/toroidal-code/chairs)
 [![Coverage](https://img.shields.io/codeclimate/coverage/github/toroidal-code/chairs.png?style=flat)](https://codeclimate.com/github/toroidal-code/chairs)
 
+> Me: What's the first thing you think of when I say 'Tables'  
+> J: 'Chairs'
 
-TODO: Write a gem description
+Chairs is a simple Table class for Ruby, with an associated Row class. 
 
 ## Installation
 
@@ -22,12 +24,39 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+```irb
+>> require 'chairs'  
+=> true
+>> t = Table.new :title
+=> #<Table:0x0000000162ee08>
+>> t.set_primary_key! :title
+=> :title
+>> t.insert! title: 'Looking for Alaska'
+=> #<Row:0x007feb28035be0>
+>> t.find_by_title('Looking for Alaska')
+>> ["Looking for Alaska"]
+>> t.add_column! :author
+=> true
+>> t.insert! title: 'An Abundance of Katherines', author: 'John Green'
+=> #<Row>
+>> t.add_index! :author
+=> true
+>> t.find_by_title('Looking for Alaska')[:author] = 'John Green'
+=> 'John Green'
+>> t.find_by_author('John Green').to_a
+=> #<Row>
+>> t.find_by_title('An Abundance of Katherines)[:author] = 'John Green'
+=> "John Green"
+>> r = t.where_author_is 'John Green'
+=> [#<Row>, #<Row>]
+>> r.map {|r| r.to_a}
+=> [["An Abundance of Katherines", "John Green"], ["Looking for Alaska", "John Green"]]
+```
 
 ## Contributing
 
-1. Fork it ( https://github.com/[my-github-username]/chairs/fork )
-2. Create your feature branch (`git checkout -b my-new-feature`)
+1. Fork it ( https://github.com/toroidal-code/chairs/fork )
+2. Create your feature branch (`git checkout -b features/my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
+4. Push to the branch (`git push origin features/my-new-feature`)
 5. Create a new Pull Request
