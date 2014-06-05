@@ -5,6 +5,7 @@ I18n.enforce_available_locales = false
 class Table
   # @param [columns] Array<String> An array of columns to start the table with
   def initialize(columns = [])
+    @table = []
     @columns = {}
     @columns_id_counter = 0
     add_columns(columns)
@@ -32,7 +33,15 @@ class Table
     @columns.keys
   end
 
-  def insert()
+  # @param [options] Hash
+  def insert(options = {})
+    row = []
+    options.each_pair do |key, value|
+      col_id = get_column_id(key)
+      row[col_id] = value
+    end
+    table << row
+    row
   end
 
   # Define on self, since it's  a class method
@@ -42,6 +51,14 @@ class Table
       find($1.to_sym => arguments.first)
     else
       super
+    end
+  end
+
+  private
+  def get_column_id(name)
+    id = columns[name]
+    if id.nil?
+      raise ArgumentError 'No such column by that name'
     end
   end
 end
