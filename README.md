@@ -1,4 +1,8 @@
 # Chairs
+[![Build Status](http://img.shields.io/travis/toroidal-code/chairs/develop.svg?style=flat)](https://travis-ci.org/toroidal-code/chairs)
+[![Code Climate](https://img.shields.io/codeclimate/github/toroidal-code/chairs.png?style=flat)](https://codeclimate.com/github/toroidal-code/chairs)
+[![Coverage](https://img.shields.io/codeclimate/coverage/github/toroidal-code/chairs.png?style=flat)](https://codeclimate.com/github/toroidal-code/chairs)
+
 
 TODO: Write a gem description
 
