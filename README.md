@@ -45,7 +45,7 @@ Or install it yourself as:
 => 'John Green'
 >> t.find_by_author('John Green').to_a
 => #<Row>
->> t.find_by_title('An Abundance of Katherines)[:author] = 'John Green'
+>> t.find_by_title('An Abundance of Katherines')[:author] = 'John Green'
 => "John Green"
 >> r = t.where_author_is 'John Green'
 => [#<Row>, #<Row>]
