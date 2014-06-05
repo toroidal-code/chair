@@ -1,3 +1,7 @@
+require 'active_support/core_ext/string/inflections'
+
+I18n.enforce_available_locales = false
+
 class Table
   # @param [columns] Array<String> An array of columns to start the table with
   def initialize(columns = [])
@@ -8,6 +12,14 @@ class Table
 
   # @param [column] String the column name to add
   def add_column(column)
+    case column
+    when String
+      column = column.parameterize.to_sym
+    when Symbol
+    else
+      raise ArgumentError 'Column name should be a symbol or a string'
+    end
+    column = column.to_sym
     @columns[column] = @columns_id_counter
     @columns_id_counter += 1
   end
@@ -16,11 +28,11 @@ class Table
     columns.each { |c| add_column c }
   end
 
-  def insert()
+  def columns
+    @columns.keys
   end
 
-  def find(*args)
-
+  def insert()
   end
 
   # Define on self, since it's  a class method
