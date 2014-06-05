@@ -1,5 +1,5 @@
-class Table
-  def self.hi
-    puts "Hello World"
-  end
+require "chairs/version"
+
+module Chairs
+  # Your code goes here...
 end
