@@ -20,7 +20,6 @@ class Table
     else
       raise ArgumentError, "Column name should be Symbol not #{column.class}"
     end
-    column = column.to_sym
     @columns[column] = @columns_id_counter
     @columns_id_counter += 1
   end
@@ -53,10 +52,6 @@ class Table
     end
   end
 
-  def indices
-    @indices
-  end
-
   # @param [Hash] options the columns to insert
   def insert(options = {})
     row = Row.new(self)
@@ -67,7 +62,7 @@ class Table
       end
 
       if @indices.include? col
-        instance_variable_get("@#{col}_index_map".to_sym)[col] = value
+        instance_variable_get("@#{col}_index_map".to_sym)[value] = @table.size
       end
       row[col] = value
     end
@@ -78,10 +73,10 @@ class Table
   end
 
   # Define on self, since it's  a class method
-  def self.method_missing(method_sym, *arguments, &block)
+  def method_missing(method_sym, *arguments, &block)
     # the first argument is a Symbol, so you need to_s it if you want to pattern match
     if method_sym.to_s =~ /^find_by_(.*)$/
-      where($1.to_sym => arguments.first)
+      find_by($1.to_sym => arguments.first)
     else
       super
     end
@@ -124,7 +119,6 @@ class Table
     # Then, perform table scans for the rest of the restrictions
     # Removed the indexed columns
     options = options.reject { |col, val| indexed_cols.include? col }
-
     #slow O(N) find
     options.each_pair do |col, val|
       restrict_with_table_scan(col, val, results)
@@ -132,7 +126,9 @@ class Table
     results.to_a
   end
 
-  alias_method :find_by, :where
+  def find_by(options)
+    where(options).first
+  end
 
 
   def table_scan(options)
@@ -170,7 +166,6 @@ class Table
   # @return [Set]
   def restrict_with_index(key, value, initial=@table.to_set)
     idx_map = instance_variable_get("@#{key}_index_map".to_sym)
-
     unless idx_map.has_key? value
       return Set.new
     end
@@ -179,7 +174,7 @@ class Table
       return Set.new
     end
     rows = @table.values_at *row_idxs
-    intial.intersection rows
+    initial.intersection rows
   end
 
   def restrict_with_table_scan(col, value, initial=@table.to_set)

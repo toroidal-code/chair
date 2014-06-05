@@ -1,4 +1,5 @@
 class Row
+
   def initialize(table)
     @table = table
     @row = []
@@ -30,4 +31,9 @@ class Row
   def to_a
     @row
   end
+
+  def eql?(other)
+    @row.eql?(other.instance_variable_get("@row"))
+  end
+
 end
