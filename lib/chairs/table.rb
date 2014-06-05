@@ -100,6 +100,8 @@ class Table
     # the first argument is a Symbol, so you need to_s it if you want to pattern match
     if method_sym.to_s =~ /^find_by_(.*)$/
       find_by($1.to_sym => arguments.first)
+    elsif method_sym.to_s =~ /^where_(.*)_is$/
+      where($1.to_sym => arguments.first)
     else
       super
     end
