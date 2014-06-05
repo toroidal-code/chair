@@ -1,5 +1,2 @@
 require "chairs/version"
-
-module Chairs
-  # Your code goes here...
-end
+require 'chairs/table'
