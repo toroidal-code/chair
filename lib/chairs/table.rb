@@ -72,7 +72,7 @@ class Table
       result ||= true
     end
     if @indices.include? column
-      @indices = @indices.delete column
+      @indices.delete column
       result ||= true
     end
     result
