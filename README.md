@@ -42,12 +42,10 @@ Or install it yourself as:
 => #<Row>
 >> t.add_index! :author
 => true
->> t.find_by_title('Looking for Alaska')[:author] = 'John Green'
-=> 'John Green'
 >> t.find_by_author('John Green').to_a
 => ["An Abundance of Katherines", "John Green"]
->> t.find_by_title('An Abundance of Katherines')[:author] = 'John Green'
-=> "John Green"
+>> t.find_by_title('Looking for Alaska')[:author] = 'John Green'
+=> 'John Green'
 >> r = t.where_author_is 'John Green'
 => [#<Row>, #<Row>]
 >> r.map {|r| r.to_a}
