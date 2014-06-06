@@ -243,17 +243,17 @@ class Table
   # Scan the table and add all the rows to the index
   # @param column [Symbol] the column to construct the index for
   def build_index(column)
+    ivar_name = "@#{column}_index_map".to_sym
     @table.each_with_index do |row, idx|
       val = row[column]
       unless val.nil?
-        if instance_variable_get("@#{column}_index_map".to_sym)[val].nil?
-          instance_variable_get("@#{column}_index_map".to_sym)[val] = Set.new
+        if instance_variable_get(ivar_name)[val].nil?
+          instance_variable_get(ivar_name)[val] = Set.new
         end
-        instance_variable_get("@#{column}_index_map".to_sym)[val] =
-            instance_variable_get("@#{column}_index_map".to_sym)[val] << idx
+        instance_variable_get(ivar_name)[val] =
+            instance_variable_get(ivar_name)[val] << idx
       end
     end
     return
   end
-
 end
