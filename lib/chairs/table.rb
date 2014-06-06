@@ -1,5 +1,4 @@
 require 'set'
-require 'pp'
 
 # @author Katherine Whitlock <toroidalcode@gmail.com>
 # @attr_reader primary_key [Symbol] the primary key of the table
