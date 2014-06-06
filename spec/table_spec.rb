@@ -110,4 +110,12 @@ describe Chair do
       table.instance_variable_get("@title_index_map").has_key? 'The Fault in Our Stars'
     ).to eq(true)
   end
+
+  it 'adds data to the index' do
+    table = Chair.new :title
+    table.add_index! :title
+    expect {
+      table.insert! title: 'The Fault in Our Stars'
+    }.to change{table.instance_variable_get("@title_index_map").size}.by(1)
+  end
 end

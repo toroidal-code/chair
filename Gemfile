@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-# Specify your gem's dependencies in chairs.gemspec
+# Specify your gem's dependencies in chair.gemspec
 gemspec
 
 group :test do

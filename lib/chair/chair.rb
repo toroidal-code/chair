@@ -1,5 +1,4 @@
 require 'set'
-require 'pp'
 
 # @author Katherine Whitlock <toroidalcode@gmail.com>
 # @attr_reader primary_key [Symbol] the primary key of the table
@@ -47,6 +46,8 @@ class Chair
   end
 
   # Retrieve the current columns
+  # Order is guaranteed to be the order that the columns were inserted in,
+  # i.e., left to right
   # @return [Array<Symbol>] the columns in the table
   def columns
     @columns.keys
@@ -89,21 +90,31 @@ class Chair
   end
 
   # Insert a new row of data into the column
-  # @param args [Hash] the columns to insert
+  # @param args [Hash, Array] the data to insert
   # @return [Row, nil] the row inserted, or nil if the row was empty
   def insert!(args = {})
-    row = Row.new(self, @table.size)
-    args.each_pair do |col, value|
-      # If there's a primary_key defined
-      if has_primary_key? and columns.include? col and @primary_key == col
-        @pk_map[value] = @table.size
+    # Fail fast
+    if args.empty?
+      return nil
+    end
+
+    args = case args
+             when Hash
+               args
+             else
+               Hash[columns.zip(args.to_a)]
+           end
+
+    if has_primary_key?
+      if args.include? primary_key
+        @pk_map[args[primary_key]] = @table.size
+      else # If our table has a primary key, but can't find it in the data
+        raise ArgumentError, 'Missing primary key in record to be inserted'
       end
-      row[col] = value
     end
-    unless row.empty?
-      @table << row
-      row
-    end
+    row = Row.new(self, @table.size, args)
+    @table << row
+    row
   end
 
   # Method_missing is used to dispatch to find_by_* and where_*_is
@@ -203,6 +214,25 @@ class Chair
     not @primary_key.nil?
   end
 
+  # @param [Symbol] column
+  # @param [Hash<Object, Object>] map
+  # @param [Bool] overwrite
+  def merge!(column, map, overwrite: false)
+
+  end
+
+  def all
+    @table
+  end
+
+  def first
+    @table.first
+  end
+
+  def last
+    @table.last
+  end
+
   protected
   def get_column_id(name)
     id = @columns[name]
@@ -247,6 +277,6 @@ class Chair
             instance_variable_get(ivar_name)[val] << idx
       end
     end
-    return
+    nil
   end
 end
