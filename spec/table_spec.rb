@@ -91,4 +91,23 @@ describe Chair do
       table.remove_index! :title
     }.to change {table.indices.size}.by(-1)
   end
+
+  it 'finds the column id' do
+    table = Chair.new :title
+    expect(table.send(:get_column_id, :title)).to eq(0)
+  end
+
+  it "raises ArgumentError if the column doesn't exist" do
+    table = Chair.new
+    expect{table.send(:get_column_id, :title)}.to raise_error(ArgumentError)
+  end
+
+  it 'builds an index of existing data' do
+    table = Chair.new :title
+    table.insert! title: 'The Fault in Our Stars'
+    table.add_index! :title
+    expect(
+      table.instance_variable_get("@title_index_map").has_key? 'The Fault in Our Stars'
+    ).to eq(true)
+  end
 end

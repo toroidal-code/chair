@@ -1,4 +1,5 @@
 require 'set'
+require 'pp'
 
 # @author Katherine Whitlock <toroidalcode@gmail.com>
 # @attr_reader primary_key [Symbol] the primary key of the table
@@ -179,7 +180,7 @@ class Chair
   # @return [Array<Row>] the rows found
   def table_scan(args)
     results = @table.to_set
-    options.each_pair do |col, value|
+    args.each_pair do |col, value|
       results = restrict_with_table_scan(col, value, results)
     end
     results.to_a
@@ -230,13 +231,6 @@ class Chair
 
   def restrict_with_table_scan(col, value, initial=@table.to_set)
     initial.keep_if { |row| row[col] == value }
-  end
-
-  def select(col, table = @table, &block)
-    col_id = get_column_id(col)
-    table.select do |row|
-      block(col)
-    end
   end
 
   # Scan the table and add all the rows to the index
