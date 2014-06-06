@@ -1,12 +1,13 @@
 class Row
+  include Comparable
 
   # Create a new cell
   # @param table [Table] the table holding this row
   # @param id [Fixnum] the array index of this row in the interal 2D array
-  def initialize(table, id)
+  def initialize(table, id, data = [])
     @row_id = id
     @table = table
-    @row = []
+    @row = data
   end
 
   # Get a cell based on the column name
@@ -42,7 +43,7 @@ class Row
     map = {}
     @table.columns.each do |col|
       idx = @table.send(:get_column_id, col)
-      map[col] = row[idx]
+      map[col] = @row[idx]
     end
     map
   end
@@ -56,7 +57,25 @@ class Row
   # Compare Row instances based on internal representation
   # @param other [Object] the object to compare to
   # @return [Bool] whether or not the objects are the same
-  def eql?(other)
-    @row.eql?(other.instance_variable_get("@row"))
+  def ==(other)
+    case other
+      when Row
+        @row == other.instance_variable_get("@row")
+      when Array
+        @row == other
+      else false
+    end
+  end
+
+  # Compare rows within a table
+  # @param other [Object] the object to compare to
+  def <=>(other)
+    # only be comparable if we're in the same table
+    if @table.equal?(other.instance_variable_get(@table))
+      other_id = other.instance_variable_get("@id")
+      @id <=> other_id
+    else
+      nil
+    end
   end
 end
