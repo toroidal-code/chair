@@ -68,16 +68,7 @@ class Table
       result ||= true
     end
 
-    @table.each_with_index do |row, idx|
-      val = row[column]
-      unless val.nil?
-        if instance_variable_get("@#{column}_index_map".to_sym)[val].nil?
-          instance_variable_get("@#{column}_index_map".to_sym)[val] = Set.new
-        end
-        instance_variable_get("@#{column}_index_map".to_sym)[val] =
-            instance_variable_get("@#{column}_index_map".to_sym)[val] << idx
-      end
-    end
+    build_index column
     result
   end
 
@@ -248,4 +239,21 @@ class Table
       block(col)
     end
   end
+
+  # Scan the table and add all the rows to the index
+  # @param column [Symbol] the column to construct the index for
+  def build_index(column)
+    @table.each_with_index do |row, idx|
+      val = row[column]
+      unless val.nil?
+        if instance_variable_get("@#{column}_index_map".to_sym)[val].nil?
+          instance_variable_get("@#{column}_index_map".to_sym)[val] = Set.new
+        end
+        instance_variable_get("@#{column}_index_map".to_sym)[val] =
+            instance_variable_get("@#{column}_index_map".to_sym)[val] << idx
+      end
+    end
+    return
+  end
+
 end
