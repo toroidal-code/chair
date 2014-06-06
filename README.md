@@ -1,12 +1,12 @@
-# Chairs
+# Chair
 [![Build Status](http://img.shields.io/travis/toroidal-code/chairs/master.svg?style=flat)](https://travis-ci.org/toroidal-code/chairs)
 [![Code Climate](https://img.shields.io/codeclimate/github/toroidal-code/chairs.png?style=flat)](https://codeclimate.com/github/toroidal-code/chairs)
 [![Coverage](https://img.shields.io/codeclimate/coverage/github/toroidal-code/chairs.png?style=flat)](https://codeclimate.com/github/toroidal-code/chairs)
 
 > Me: What's the first thing you think of when I say 'Tables'?  
-> J: 'Chairs'.
+> J: 'Chair'.
 
-Chairs is a simple Table class for Ruby, with an associated Row class. 
+Chair is a simple Table class for Ruby, with an associated Row class. 
 
 ## Installation
 

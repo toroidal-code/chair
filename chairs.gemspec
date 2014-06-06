@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'chairs/version'
+require 'chair/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'chairs'
-  spec.version       = Chairs::VERSION
+  spec.name          = 'chair'
+  spec.version       = Chair::VERSION
   spec.date          = '2014-06-04'
   spec.summary       = "Tables!"
   spec.description   = "A pure ruby table implementation with arbitray column indices"
@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
   spec.email         = 'toroidalcode@gmail.com'
 
   spec.files         = `git ls-files -z`.split("\x0")
-  spec.homepage      = 'http://github.com/toroidal-code/chairs'
+  spec.homepage      = 'http://github.com/toroidal-code/chair'
   spec.license       = 'MIT'
 
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
