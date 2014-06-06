@@ -1,9 +1,10 @@
 # Chair
-[![Build Status](http://img.shields.io/travis/toroidal-code/chairs/master.svg?style=flat)](https://travis-ci.org/toroidal-code/chairs)
-[![Code Climate](https://img.shields.io/codeclimate/github/toroidal-code/chairs.png?style=flat)](https://codeclimate.com/github/toroidal-code/chairs)
-[![Coverage](https://img.shields.io/codeclimate/coverage/github/toroidal-code/chairs.png?style=flat)](https://codeclimate.com/github/toroidal-code/chairs)
+[![Build Status](http://img.shields.io/travis/toroidal-code/chair/master.svg?style=flat)](https://travis-ci.org/toroidal-code/chair)
+[![Code Climate](https://img.shields.io/codeclimate/github/toroidal-code/chair.svg?style=flat)](https://codeclimate.com/github/toroidal-code/chair)
+[![Coverage](https://img.shields.io/codeclimate/coverage/github/toroidal-code/chair.svg?style=flat)](https://codeclimate.com/github/toroidal-code/chair)
+[![Gem Version](http://img.shields.io/gem/v/chair.svg?style=flat)](https://rubygems.org/gems/chair)
 
-> Me: What's the first thing you think of when I say 'Tables'?  
+> Me: What's the first thing you think of when I say 'Table'?  
 > J: 'Chair'.
 
 Chair is a simple Table class for Ruby, with an associated Row class. 
@@ -12,7 +13,7 @@ Chair is a simple Table class for Ruby, with an associated Row class.
 
 Add this line to your application's Gemfile:
 
-    gem 'chairs'
+    gem 'chair'
 
 And then execute:
 
@@ -20,12 +21,12 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install chairs
+    $ gem install chair
 
 ## Usage
 
 ```irb
->> require 'chairs'  
+>> require 'chair'  
 => true
 >> t = Table.new :title
 => #<Table:0x0000000162ee08>
@@ -55,7 +56,7 @@ Or install it yourself as:
 
 ## Contributing
 
-1. Fork it ( https://github.com/toroidal-code/chairs/fork )
+1. Fork it ( https://github.com/toroidal-code/chair/fork )
 2. Create your feature branch (`git checkout -b features/my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin features/my-new-feature`)
