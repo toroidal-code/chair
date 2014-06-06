@@ -214,21 +214,28 @@ class Chair
     not @primary_key.nil?
   end
 
-  # @param [Symbol] column
-  # @param [Hash<Object, Object>] map
-  # @param [Bool] overwrite
-  def merge!(column, map, overwrite: false)
+  # @param column [Symbol]
+  # @param map [Hash<Object, Object>]
+  # @param opts [Bool] :overwrite
+  # @param
+  def merge!(column, map, opts = {})
 
   end
 
+  # Retrieve all rows
+  # @return [Array<Chair::Row>] all of the rows in the table
   def all
     @table
   end
 
+  # Retrieve the first row in the table
+  # @return [Chair::Row] the first row in the table
   def first
     @table.first
   end
 
+  # Retrieve the last row in the table
+  # @return [Chair::Row] the last row in the table
   def last
     @table.last
   end
