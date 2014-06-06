@@ -3,8 +3,8 @@
 [![Code Climate](https://img.shields.io/codeclimate/github/toroidal-code/chairs.png?style=flat)](https://codeclimate.com/github/toroidal-code/chairs)
 [![Coverage](https://img.shields.io/codeclimate/coverage/github/toroidal-code/chairs.png?style=flat)](https://codeclimate.com/github/toroidal-code/chairs)
 
-> Me: What's the first thing you think of when I say 'Tables'  
-> J: 'Chairs'
+> Me: What's the first thing you think of when I say 'Tables'?  
+> J: 'Chairs'.
 
 Chairs is a simple Table class for Ruby, with an associated Row class. 
 
@@ -44,7 +44,7 @@ Or install it yourself as:
 >> t.find_by_title('Looking for Alaska')[:author] = 'John Green'
 => 'John Green'
 >> t.find_by_author('John Green').to_a
-=> #<Row>
+=> ["An Abundance of Katherines", "John Green"]
 >> t.find_by_title('An Abundance of Katherines')[:author] = 'John Green'
 => "John Green"
 >> r = t.where_author_is 'John Green'

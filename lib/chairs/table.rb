@@ -1,9 +1,14 @@
 require 'set'
 require 'pp'
 
+# @author Katherine Whitlock <toroidalcode@gmail.com>
+# @attr_reader primary_key [Symbol] the primary key of the table
+# @attr_reader indices [Set<Symbol>] the set of indices for the table
 class Table
-  attr_accessor :primary_key, :indices
-  # @param [columns] Array<String> An array of columns to start the table with
+  attr_reader :primary_key, :indices
+
+  # Creates a new Table object
+  # @param columns [Symbol] columns to insert into the table at initialization
   def initialize(*columns)
     @table = []
     @columns = {}
@@ -13,12 +18,14 @@ class Table
     @indices = Set.new
   end
 
-  # @param [String] column the column name to add
+  # Add a new column to the table.
+  # @param column [Symbol] the column name to add
+  # @raise [ArgumentError] if the column name is not a symbol
+  # @return [Bool] whether or not we successfully added the new column
   def add_column!(column)
     case column
     when Symbol
-    else
-      raise ArgumentError, "Column name should be Symbol not #{column.class}"
+    else raise ArgumentError, "Column name should be Symbol not #{column.class}"
     end
 
     if @columns.include? column
@@ -30,14 +37,24 @@ class Table
     end
   end
 
+  # Add multiple columns to the table
+  # @param columns [Symbol] the columns to add
+  # @return [Bool] whether or not all of the columns were successfully added
   def add_columns!(*columns)
-    columns.each { |c| add_column! c }
+    result = true
+    columns.each { |c| result &&= add_column!(c) }
+    result
   end
 
+  # Retrieve the current columns
+  # @return [Array<Symbol>] the columns in the table
   def columns
     @columns.keys
   end
 
+  # Add a new index to the table
+  # @param column [Symbol] the column to create the index on
+  # @return [Bool] whether or not we added the index
   def add_index!(column)
     result = false
     get_column_id(column)
@@ -51,20 +68,13 @@ class Table
       result ||= true
     end
 
-
-    @table.each_with_index do |row, idx|
-      val = row[column]
-      unless val.nil?
-        if instance_variable_get("@#{column}_index_map".to_sym)[val].nil?
-          instance_variable_get("@#{column}_index_map".to_sym)[val] = Set.new
-        end
-        instance_variable_get("@#{column}_index_map".to_sym)[val] =
-            instance_variable_get("@#{column}_index_map".to_sym)[val] << idx
-      end
-    end
+    build_index column
     result
   end
 
+  # Remove an index from the table
+  # @param column [Symbol] the column to remove the index from
+  # @return [Bool] whether or not the column was successfully removed
   def remove_index!(column)
     result = false
     if instance_variable_defined?("@#{column}_index_map".to_sym)
@@ -78,16 +88,16 @@ class Table
     result
   end
 
-  # @param [Hash] options the columns to insert
-  def insert!(options = {})
+  # Insert a new row of data into the column
+  # @param args [Hash] the columns to insert
+  # @return [Row, nil] the row inserted, or nil if the row was empty
+  def insert!(args = {})
     row = Row.new(self, @table.size)
-    options.each_pair do |col, value|
+    args.each_pair do |col, value|
       # If there's a primary_key defined
       if has_primary_key? and columns.include? col and @primary_key == col
         @pk_map[value] = @table.size
       end
-
-
       row[col] = value
     end
     unless row.empty?
@@ -96,6 +106,8 @@ class Table
     end
   end
 
+  # Method_missing is used to dispatch to find_by_* and where_*_is
+  # @param method_sym [Symbol] the method called
   def method_missing(method_sym, *arguments, &block)
     # the first argument is a Symbol, so you need to_s it if you want to pattern match
     if method_sym.to_s =~ /^find_by_(.*)$/
@@ -107,14 +119,17 @@ class Table
     end
   end
 
+  # The number of rows in the table
+  # @return [Fixnum] the size
   def size
     @table.size
   end
 
   alias_method :count, :size
 
-  # @param [Object] pk The primary key to look up using
-  # @return [Row] The row that matches
+  # Finds a row by searching based on primary key
+  # @param pk [Object] The primary key to look up using
+  # @return [Row,nil] The row that matches
   def find(pk)
     if has_primary_key?
       idx = @pk_map[pk]
@@ -123,45 +138,57 @@ class Table
     end
   end
 
-  # @param [Hash] options
-  def where(options)
+  # Search for rows based on given data
+  # @param args [Hash<Symbol, Object>] the data to search for
+  # @return [Array<Row>, nil] the matching rows, can be nil
+  def where(args)
     # Try and find a primary key
-    if has_primary_key? and options.keys.include? @primary_key
-      idx = @pk_map[options[@primary_key]]
+    if has_primary_key? and args.keys.include? @primary_key
+      idx = @pk_map[args[@primary_key]]
       return [@table[idx]]
     end
-    indexed_cols = find_valid_indices(options.keys)
+    indexed_cols = find_valid_indices(args.keys)
 
     results = @table.to_set
 
     # First restrict the query as far as we can with indices
     unless indexed_cols.empty?
       indexed_cols.each do |col|
-        results = restrict_with_index(col, options[col], results)
+        results = restrict_with_index(col, args[col], results)
       end
     end
 
     # Then, perform table scans for the rest of the restrictions
     # Removed the indexed columns
-    options = options.reject { |col, val| indexed_cols.include? col }
+    args = args.reject { |col, val| indexed_cols.include? col }
     #slow O(N) find
-    options.each_pair do |col, val|
+    args.each_pair do |col, val|
       results = restrict_with_table_scan(col, val, results)
     end
     results.to_a
   end
 
-  def find_by(options)
-    where(options).first
+  # Find a row based on the data given
+  # @param args [Hash<Symbol, Object>] the data to search for
+  # @return [Row,  nil] the matching row, can be nil
+  def find_by(args)
+    where(args).first
   end
 
-  def table_scan(options)
-    results = table
+  # Scan the table to find rows
+  # @param args [Hash<Symbol, Object>] the rows to find
+  # @return [Array<Row>] the rows found
+  def table_scan(args)
+    results = @table.to_set
     options.each_pair do |col, value|
-      results = restrict(results, col, value)
+      results = restrict_with_table_scan(col, value, results)
     end
+    results.to_a
   end
 
+  # Set the primary key of the table.
+  # @param column [Symbol] the column to be primary key
+  # @return [Symbol, nil] the primary key assigned. can be nil if the column doesn't exist
   def set_primary_key!(column)
     unless @columns.has_key? column
       return nil
@@ -170,6 +197,8 @@ class Table
     @primary_key = column
   end
 
+  # Does this table have a primary key?
+  # @return [Bool] whether or not there is a primary key
   def has_primary_key?
     not @primary_key.nil?
   end
@@ -187,7 +216,6 @@ class Table
     @indices.intersection(cols).to_a
   end
 
-  # @return [Set]
   def restrict_with_index(key, value, initial=@table.to_set)
     idx_map = instance_variable_get("@#{key}_index_map".to_sym)
     unless idx_map.has_key? value
@@ -210,5 +238,22 @@ class Table
     table.select do |row|
       block(col)
     end
+  end
+
+  # Scan the table and add all the rows to the index
+  # @param column [Symbol] the column to construct the index for
+  def build_index(column)
+    ivar_name = "@#{column}_index_map".to_sym
+    @table.each_with_index do |row, idx|
+      val = row[column]
+      unless val.nil?
+        if instance_variable_get(ivar_name)[val].nil?
+          instance_variable_get(ivar_name)[val] = Set.new
+        end
+        instance_variable_get(ivar_name)[val] =
+            instance_variable_get(ivar_name)[val] << idx
+      end
+    end
+    return
   end
 end
