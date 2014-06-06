@@ -3,7 +3,7 @@ require 'set'
 # @author Katherine Whitlock <toroidalcode@gmail.com>
 # @attr_reader primary_key [Symbol] the primary key of the table
 # @attr_reader indices [Set<Symbol>] the set of indices for the table
-class Table
+class Chair
   attr_reader :primary_key, :indices
 
   # Creates a new Table object

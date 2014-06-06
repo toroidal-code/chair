@@ -1,4 +1,4 @@
-class Row
+class Chair::Row
   include Comparable
 
   # Create a new cell
@@ -59,7 +59,7 @@ class Row
   # @return [Bool] whether or not the objects are the same
   def ==(other)
     case other
-      when Row
+      when Chair::Row
         @row == other.instance_variable_get("@row")
       when Array
         @row == other

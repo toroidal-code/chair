@@ -1,3 +1,3 @@
-module Chair
+class Chair
   VERSION = "1.0.2"
 end

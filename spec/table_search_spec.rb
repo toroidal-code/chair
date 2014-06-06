@@ -1,7 +1,7 @@
 require 'spec_helper'
 
-describe Table do
-  subject(:table) { Table.new :id, :title, :author }
+describe Chair do
+  subject(:table) { Chair.new :id, :title, :author }
 
   describe 'finds by' do
     it 'primary key' do
