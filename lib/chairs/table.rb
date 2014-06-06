@@ -102,7 +102,7 @@ class Table
   # @return [Row, nil] the row inserted, or nil if the row was empty
   def insert!(args = {})
     row = Row.new(self, @table.size)
-    arsg.each_pair do |col, value|
+    args.each_pair do |col, value|
       # If there's a primary_key defined
       if has_primary_key? and columns.include? col and @primary_key == col
         @pk_map[value] = @table.size
