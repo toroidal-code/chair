@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.version       = Chair::VERSION
   spec.date          = '2014-06-04'
   spec.summary       = "Tables!"
-  spec.description   = "A pure ruby table implementation with arbitray column indices"
+  spec.description   = "A pure ruby table implementation with arbitrary column indices"
   spec.authors       = ["Katherine Whitlock"]
   spec.email         = 'toroidalcode@gmail.com'
 
