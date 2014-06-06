@@ -58,7 +58,9 @@ class Chair
   # @return [Bool] whether or not we added the index
   def add_index!(column)
     result = false
-    get_column_id(column)
+    unless @columns.include?(column)
+      raise ArgumentError, "Column #{column} does not exist in table"
+    end
     unless instance_variable_defined?("@#{column}_index_map".to_sym)
       instance_variable_set("@#{column}_index_map".to_sym, {})
       result ||= true
@@ -241,13 +243,6 @@ class Chair
   end
 
   protected
-  def get_column_id(name)
-    id = @columns[name]
-    if id.nil?
-      raise ArgumentError, "No such column #{name}"
-    end
-    id
-  end
 
   def find_valid_indices(cols)
     @indices.intersection(cols).to_a

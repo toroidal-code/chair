@@ -92,14 +92,9 @@ describe Chair do
     }.to change {table.indices.size}.by(-1)
   end
 
-  it 'finds the column id' do
-    table = Chair.new :title
-    expect(table.send(:get_column_id, :title)).to eq(0)
-  end
-
-  it "raises ArgumentError if the column doesn't exist" do
+  it "raises ArgumentError if we add an index for a column that doesn't exist" do
     table = Chair.new
-    expect{table.send(:get_column_id, :title)}.to raise_error(ArgumentError)
+    expect{table.add_index! :title}.to raise_error(ArgumentError)
   end
 
   it 'builds an index of existing data' do

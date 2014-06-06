@@ -51,11 +51,7 @@ class Chair::Row
   # Convert the row data to an array
   # @return [Array<Object>] the data in the row
   def to_a
-    arr = []
-    @attributes.each_pair do |col, val|
-      arr[@table.send(:get_column_id, col)] = val
-    end
-    arr
+    @table.columns.map { |col| @attributes[col] }
   end
 
   # Compare Row instances based on internal representation
