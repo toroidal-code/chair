@@ -35,7 +35,14 @@ describe Table do
     }.to change{ table.columns.count }.by(1)
   end
 
-  it 'doesn\'t a column with the same name' do
+  it 'raises an ArgumentError if the name is not a symbol' do
+    table = Table.new
+    expect{
+      table.add_column!('Title')
+    }.to raise_error(ArgumentError)
+  end
+
+  it 'doesn\'t add column with the same name' do
     table = Table.new :title
     expect {
       table.add_column!(:title)
@@ -61,6 +68,13 @@ describe Table do
     expect {
       table.set_primary_key! :title
     }.to change {table.primary_key}.from(nil).to(:title)
+  end
+
+  it "doesn't set the primary key if it's not a column" do
+    table = Table.new
+    expect{
+      table.set_primary_key! :title
+    }.not_to change{table.primary_key}.from(nil)
   end
 
   it 'adds an index' do
