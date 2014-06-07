@@ -86,11 +86,15 @@ class Chair
   def insert!(args)
     args = process_incoming_data(args)
     if has_primary_key?
-      if args.include? @primary_key
-        @pk_map[args[@primary_key]] = @table.size
-      else # If our table has a primary key, but can't find it in the data
+      unless args.include? @primary_key
+        # If our table has a primary key, but can't find it in the data
         raise ArgumentError, 'Missing primary key in record to be inserted'
       end
+      val = args[@primary_key]
+      if @pk_map.has_key?(val)
+        raise RuntimeError, "Primary key #{val.inspect} already exists in table"
+      end
+      @pk_map[val] = @table.size
     end
     row = Row.new(self, @table.size, args)
     @table << row

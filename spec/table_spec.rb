@@ -56,7 +56,7 @@ describe Chair do
     }.to change {table.columns.count}.by(2)
   end
 
-  describe 'inserts a row' do
+  describe 'inserting a row' do
     it 'from a hash' do
       table = Chair.new :title
       expect {
@@ -69,6 +69,15 @@ describe Chair do
       expect {
         table.insert!(['Gone with the Wind'])
       }.to change { table.size }.by(1)
+    end
+
+    it 'with the same primary key raises RuntimeError' do
+      table = Chair.new :title
+      table.set_primary_key! :title
+      table.insert! title: 'Gone with the Wind'
+      expect {
+        table.insert!(['Gone with the Wind'])
+      }.to raise_error RuntimeError, 'Primary key "Gone with the Wind" already exists in table'
     end
   end
 
@@ -84,7 +93,7 @@ describe Chair do
       table = Chair.new
       expect{
         table.set_primary_key! :title
-      }.to raise_error ArgumentError, "Column :title does not exist in table"
+      }.to raise_error ArgumentError, 'Column :title does not exist in table'
     end
 
     it "fails if there's already a primary key" do
