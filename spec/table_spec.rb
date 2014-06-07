@@ -80,6 +80,21 @@ describe Chair do
       }.to change {table.primary_key}.from(nil).to(:title)
     end
 
+    it "should raise an ArgumentError if it's not an existing column" do
+      table = Chair.new
+      expect{
+        table.set_primary_key! :title
+      }.to raise_error ArgumentError, "Column :title does not exist in table"
+    end
+
+    it "fails if there's already a primary key" do
+      table = Chair.new :title, :author
+      table.set_primary_key! :title
+      expect{
+        table.set_primary_key! :author
+      }.not_to change{table.primary_key}.from(:title)
+    end
+
     describe 'fails to build index' do
       it 'when duplicate fields exist' do
         table = Chair.new :title
@@ -107,22 +122,15 @@ describe Chair do
           table.set_primary_key! :title
         }.to raise_error RuntimeError, 'Row does not have a value in column :title'
       end
-
     end
-  end
 
-  it "doesn't set the primary key if it's not a valid column" do
-    table = Chair.new
-    expect{
-      table.set_primary_key! :title
-    }.not_to change{table.primary_key}.from(nil)
-  end
-
-  it "doesn't set the primary key if there's already a primary key" do
-    table = Chair.new
-    expect{
-      table.set_primary_key! :title
-    }.not_to change{table.primary_key}.from(nil)
+    it 'removes index on column' do
+      table = Chair.new :title
+      table.add_index! :title
+      expect {
+        table.set_primary_key! :title
+      }.to change {table.indices}.from([:title]).to([])
+    end
   end
 
   describe 'add index' do

@@ -4,7 +4,7 @@ require 'set'
 # @attr_reader primary_key [Symbol] the primary key of the table
 # @attr_reader indices [Set<Symbol>] the set of indices for the table
 class Chair
-  attr_reader :primary_key, :indices
+  attr_reader :primary_key
 
   # Creates a new Table object
   # @param columns [Symbol] columns to insert into the table at initialization
@@ -118,6 +118,10 @@ class Chair
 
   alias_method :count, :size
 
+  def indices
+    @indices.keys
+  end
+
   # Finds a row by searching based on primary key
   # @param pk [Object] The primary key to look up using
   # @return [Row,nil] The row that matches
@@ -182,11 +186,12 @@ class Chair
   # @param column [Symbol] the column to be primary key
   # @return [Symbol, nil] the primary key assigned. can be nil if the column doesn't exist
   def set_primary_key!(column)
-    unless @columns.has_key? column
-      return nil
+    unless has_primary_key?
+      check_column_exists column
+      remove_index!(column) if indices.include? column
+      @pk_map = build_pk_map column
+      @primary_key = column
     end
-    @pk_map = build_pk_map column
-    @primary_key = column
   end
 
   # Does this table have a primary key?
@@ -242,8 +247,20 @@ class Chair
     @table.last
   end
 
-  protected
+  def inspect
+    # Use the table's column list to order our columns
+    inspection = []
+    inspection << "primary_key: #{@primary_key.inspect}" if has_primary_key?
+    inspection << "indices: #{@indices.keys.inspect}" unless @indices.empty?
+    inspection << "columns: #{@columns.keys.inspect}" unless @columns.empty?
+    inspection = inspection.compact.join(', ')
+    unless inspection.empty?
+      inspection.insert 0, ' '
+    end
+    "#<#{self.class}#{inspection}>"
+  end
 
+  protected
   def find_valid_indices(cols)
     @indices.keys & cols
   end

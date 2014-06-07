@@ -66,7 +66,7 @@ describe Chair do
       expect(table.where_title_is('War and Peace').first.to_a).to eq([0, 'War and Peace', 'Leo Tolstoy'])
     end
 
-    it 'table scan' do
+    it 'table scan by choice' do
       table.insert! id: 0, title: 'War and Peace', author: 'Leo Tolstoy'
       expect(table.table_scan(title: 'War and Peace').first.to_a).to eq([0, 'War and Peace', 'Leo Tolstoy'])
     end
