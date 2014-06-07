@@ -92,6 +92,8 @@ class Chair::Row
     # the first argument is a Symbol, so you need to_s it if you want to pattern match
     if method_sym.to_s =~ /^has_(.*)\?$/
       has_attribute?($1.to_sym)
+    elsif @attributes.has_key? method_sym
+      @attributes[method_sym]
     else
       super
     end

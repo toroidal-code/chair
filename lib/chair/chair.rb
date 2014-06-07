@@ -20,29 +20,25 @@ class Chair
   # Add a new column to the table.
   # @param column [Symbol] the column name to add
   # @raise [ArgumentError] if the column name is not a symbol
-  # @return [Bool] whether or not we successfully added the new column
+  # @return [Symbol, nil] the new column name, or nil
   def add_column!(column)
     case column
     when Symbol
     else raise ArgumentError, "Column name should be Symbol not #{column.class}"
     end
 
-    if @columns.include? column
-      false
-    else
+    unless @columns.include? column
       @columns[column] = @columns_id_counter
       @columns_id_counter += 1
-      true
+      column
     end
   end
 
   # Add multiple columns to the table
   # @param columns [Symbol] the columns to add
-  # @return [Bool] whether or not all of the columns were successfully added
+  # @return [Array<Symbol,nil>] the columns added
   def add_columns!(*columns)
-    result = true
-    columns.each { |c| result &&= add_column!(c) }
-    result
+    columns.map { |c| add_column! c }
   end
 
   # Retrieve the current columns
@@ -67,6 +63,13 @@ class Chair
     column
   end
 
+  # Add multiple indices to the table
+  # @param columns [Symbol] the columns to create the index on
+  # @return [Array<Symbol,nil>] the indices added
+  def add_indices!(*columns)
+    columns.map { |c| add_index! c }
+  end
+
   # Remove an index from the table
   # @param column [Symbol] the column to remove the index from
   # @return [Symbol] the column that was removed
@@ -85,6 +88,7 @@ class Chair
   # @return [Row, nil] the row inserted, or nil if the row was empty
   def insert!(args)
     args = process_incoming_data(args)
+    pp args
     if has_primary_key?
       unless args.include? @primary_key
         # If our table has a primary key, but can't find it in the data
@@ -225,6 +229,7 @@ class Chair
         # if so, overwrite
         row[column] = val
       else # Check if we have the key in our pk_map. if not,
+        pp "not in map ", map
         if opts[:create_row] # if we can create rows,
           insert! @primary_key => key, column => val # create a row
         else

@@ -1,6 +1,5 @@
 # Chair
 [![Build Status](http://img.shields.io/travis/toroidal-code/chair/master.svg?style=flat)](https://travis-ci.org/toroidal-code/chair)
-[![Code Climate](https://img.shields.io/codeclimate/github/toroidal-code/chair.svg?style=flat)](https://codeclimate.com/github/toroidal-code/chair)
 [![Coverage](https://img.shields.io/codeclimate/coverage/github/toroidal-code/chair.svg?style=flat)](https://codeclimate.com/github/toroidal-code/chair)
 [![Gem Version](http://img.shields.io/gem/v/chair.svg?style=flat)](https://rubygems.org/gems/chair)
 
