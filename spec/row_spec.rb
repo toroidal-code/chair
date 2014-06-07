@@ -23,7 +23,7 @@ describe Chair::Row do
 
   it 'is not empty when data is present' do
     table = Chair.new :title
-    row = Chair::Row.new(table,0, ['Will Grayson, Will Grayson'])
+    row = Chair::Row.new(table,0, {title: 'Will Grayson, Will Grayson'})
     expect(row.empty?).to be(false)
   end
 
@@ -55,8 +55,25 @@ describe Chair::Row do
   end
 
   it 'inspect prints values' do
-    table = Chair.new :title
+    table = Chair.new :title, :author
     row = Chair::Row.new table, 0, {title: 'Will Grayson, Will Grayson', author: 'John Green'}
+  end
 
+  it 'has attribute is true when present' do
+    table = Chair.new :title, :author
+    row = Chair::Row.new table, 0, {title: 'Will Grayson, Will Grayson'}
+    expect(row.has_attribute? :title).to be(true)
+  end
+
+  it 'has attribute is false when nil' do
+    table = Chair.new :title, :author
+    row = Chair::Row.new table, 0, {title: 'Will Grayson, Will Grayson'}
+    expect(row.has_attribute? :author).to be(false)
+  end
+
+  it 'has attribute is false when empty' do
+    table = Chair.new :title, :author
+    row = Chair::Row.new table, 0, {title: 'Will Grayson, Will Grayson', author: ''}
+    expect(row.has_attribute? :title).to be(true)
   end
 end

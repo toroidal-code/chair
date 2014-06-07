@@ -7,15 +7,7 @@ class Chair::Row
   def initialize(table, id, data = {})
     @row_id = id
     @table = table
-    @attributes =
-        case data
-          when Hash
-            data.clone.keep_if{|col,_| @table.instance_variable_get('@columns').include? col }
-          else
-            # Try to convert it to an array and add it
-            # An array.to_a is the array itself
-            Hash[@table.columns.zip(data.to_a)]
-        end
+    @attributes = data
     @attributes.clone.
         keep_if{ |col, _| @table.indices.include? col }.
         each_pair{ |col, val| add_to_index(col, val) }
@@ -89,9 +81,10 @@ class Chair::Row
   end
 
   # Looks to see if we have a attribute
+  # @param name [Symbol] the column to look at
   # @return [Bool] whether or not the value is empty
   def has_attribute?(name)
-    val = @attributes[@table.send(:get_column_id, name)]
+    val = @attributes[name]
     val.nil? ? false : (not val.empty?)
   end
 

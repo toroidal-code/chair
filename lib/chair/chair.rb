@@ -14,7 +14,7 @@ class Chair
     @columns_id_counter = 0
     add_columns!(*columns)
     @primary_key = nil
-    @indices = Set.new
+    @indices = {}
   end
 
   # Add a new column to the table.
@@ -55,58 +55,36 @@ class Chair
 
   # Add a new index to the table
   # @param column [Symbol] the column to create the index on
-  # @return [Bool] whether or not we added the index
+  # @return [Symbol] the column name of the index
   def add_index!(column)
-    result = false
-    unless @columns.include?(column)
-      raise ArgumentError, "Column #{column} does not exist in table"
-    end
-    unless instance_variable_defined?("@#{column}_index_map".to_sym)
-      instance_variable_set("@#{column}_index_map".to_sym, {})
-      result ||= true
+    check_column_exists(column)
+    if @indices.include?(column) or instance_variable_defined?("@#{column}_index_map".to_sym)
+      raise ArgumentError, "Column #{column.inspect} is already an index"
     end
 
-    unless @indices.include? column
-      @indices = @indices << column
-      result ||= true
-    end
-
-    build_index column
-    result
+    @indices[column] = "@#{column}_index_map".to_sym
+    instance_variable_set(@indices[column], build_index(column))
+    column
   end
 
   # Remove an index from the table
   # @param column [Symbol] the column to remove the index from
-  # @return [Bool] whether or not the column was successfully removed
+  # @return [Symbol] the column that was removed
   def remove_index!(column)
-    result = false
-    if instance_variable_defined?("@#{column}_index_map".to_sym)
-      remove_instance_variable("@#{column}_index_map")
-      result ||= true
+    check_column_exists(column)
+    unless @indices.include?(column) or instance_variable_defined?("@#{column}_index_map".to_sym)
+      raise ArgumentError, "Column #{column} is not indexed"
     end
-    if @indices.include? column
-      @indices = @indices.delete column
-      result ||= true
-    end
-    result
+    ivar = @indices.delete column
+    remove_instance_variable(ivar) unless ivar.nil?
+    column
   end
 
   # Insert a new row of data into the column
   # @param args [Hash, Array] the data to insert
   # @return [Row, nil] the row inserted, or nil if the row was empty
-  def insert!(args = {})
-    # Fail fast
-    if args.empty?
-      return nil
-    end
-
-    args = case args
-             when Hash
-               args
-             else
-               Hash[columns.zip(args.to_a)]
-           end
-
+  def insert!(args)
+    args = process_incoming_data(args)
     if has_primary_key?
       if args.include? primary_key
         @pk_map[args[primary_key]] = @table.size
@@ -150,6 +128,7 @@ class Chair
     else nil
     end
   end
+  alias_method :[], :find
 
   # Search for rows based on given data
   # @param args [Hash<Symbol, Object>] the data to search for
@@ -206,7 +185,7 @@ class Chair
     unless @columns.has_key? column
       return nil
     end
-    @pk_map = {}
+    @pk_map = build_pk_map column
     @primary_key = column
   end
 
@@ -216,12 +195,33 @@ class Chair
     not @primary_key.nil?
   end
 
-  # @param column [Symbol]
-  # @param map [Hash<Object, Object>]
-  # @param opts [Bool] :overwrite
-  # @param
+  # Merge the table with a map of primary keys to values. There must be a primary key.
+  # @param column [Symbol] the column to insert the values into
+  # @param map [Hash<Object, Object>] a mapping of primary_key values to other values
+  # @param opts [Bool] :overwrite if a value already exists in the row, overwrite it
+  # @param opts [Bool] :create_row if the row doesn't already exist, create it
   def merge!(column, map, opts = {})
-
+    unless has_primary_key?
+      raise 'No primary key exists for this table'
+    end
+    # For each key, value
+    map.each_pair do |key, val|
+      unless @pk_map.include? key                      # Check if we have the key in our pk_map. if not,
+        if opts[:create_row]                            # if we can create rows,
+          insert! @primary_key => key, column => val       # create a row
+        else raise "No such row with primary key #{key.inspect} exists" # or raise an error
+        end
+      end
+      # if we do, check if the row has a value in the column
+      row = @table[@pk_map[key]]
+      # if it does, can we overwrite?
+      if row.has_attribute?(column) and not opts[:overwrite]
+        raise "Value already exists in table for primary key #{key.inspect} and column #{column.inspect}"
+      end
+      # if so, overwrite
+      row[column] = val
+    end
+    self
   end
 
   # Retrieve all rows
@@ -245,7 +245,7 @@ class Chair
   protected
 
   def find_valid_indices(cols)
-    @indices.intersection(cols).to_a
+    @indices.keys & cols
   end
 
   def restrict_with_index(key, value, initial=@table.to_set)
@@ -254,10 +254,7 @@ class Chair
       return Set.new
     end
     row_idxs = idx_map[value]
-    if row_idxs.nil?
-      return Set.new
-    end
-    rows = @table.values_at *row_idxs
+    rows = @table.values_at *row_idxs # *nil is empty call
     initial.intersection rows
   end
 
@@ -268,17 +265,55 @@ class Chair
   # Scan the table and add all the rows to the index
   # @param column [Symbol] the column to construct the index for
   def build_index(column)
-    ivar_name = "@#{column}_index_map".to_sym
+    map = {}
     @table.each_with_index do |row, idx|
       val = row[column]
       unless val.nil?
-        if instance_variable_get(ivar_name)[val].nil?
-          instance_variable_get(ivar_name)[val] = Set.new
-        end
-        instance_variable_get(ivar_name)[val] =
-            instance_variable_get(ivar_name)[val] << idx
+        map[val] = Set.new if map[val].nil?
+        map[val] = map[val] << idx
       end
     end
-    nil
+    map
+  end
+
+  def build_pk_map(column)
+    map = {}
+    @table.each_with_index do |row, idx|
+      val = row[column]
+      # if the value is nil, we can't use it
+      if val.nil? or val.empty?
+        raise "Row does not have a value in column #{column.inspect}"
+      end
+
+      #if we already have the value in our map, it's not unique and one-to-one
+      if map.include?(val)
+        raise "Primary key #{val.inspect} is not unique in column #{column.inspect}"
+      end
+
+      # otherwise we can assign it
+      map[val] = idx
+    end
+    map
+  end
+
+  # @return [Hash] the data in a :column => 'value' format
+  def process_incoming_data(args)
+    case args
+      when Hash
+        filtered = args.clone.keep_if{|col,_| @columns.include? col }
+        if args != filtered
+          invalid = args.clone.delete_if{|col, _| filtered.include? col }.keys.compact.join(', ')
+          raise ArgumentError, "No such column(s) #{invalid}"
+        end
+        filtered
+      else  # Because we can guarantee the order of @columns, we use this to zip the array into a hash
+        Hash[columns.zip(args.to_a)]
+    end
+  end
+
+  def check_column_exists(column)
+    unless @columns.include?(column)
+      raise ArgumentError, "Column #{column.inspect} does not exist in table"
+    end
   end
 end

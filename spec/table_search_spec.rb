@@ -71,4 +71,24 @@ describe Chair do
       expect(table.table_scan(title: 'War and Peace').first.to_a).to eq([0, 'War and Peace', 'Leo Tolstoy'])
     end
   end
+
+  it 'gets all records with #all' do
+    table.insert! id: 0, title: 'Looking for Alaska', author: 'John Green'
+    table.insert! id: 1, title: 'Lost at Sea', author: "Bryan Lee O'Malley"
+    expect(table.all.map{|r| r.to_a}).to eq([[0, 'Looking for Alaska', 'John Green'],
+                                             [1, 'Lost at Sea', "Bryan Lee O'Malley"]])
+  end
+
+  it 'gets the first record' do
+    table.insert! id: 0, title: 'Looking for Alaska', author: 'John Green'
+    table.insert! id: 1, title: 'Lost at Sea', author: "Bryan Lee O'Malley"
+    expect(table.first.to_a).to eq([0, 'Looking for Alaska', 'John Green'])
+  end
+
+  it 'gets the last record' do
+    table.insert! id: 0, title: 'Looking for Alaska', author: 'John Green'
+    table.insert! id: 1, title: 'Lost at Sea', author: "Bryan Lee O'Malley"
+    expect(table.last.to_a).to eq([1, 'Lost at Sea', "Bryan Lee O'Malley"])
+  end
+
 end
