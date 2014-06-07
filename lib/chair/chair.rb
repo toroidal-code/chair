@@ -215,20 +215,22 @@ class Chair
     end
     # For each key, value
     map.each_pair do |key, val|
-      unless @pk_map.include? key                      # Check if we have the key in our pk_map. if not,
-        if opts[:create_row]                            # if we can create rows,
-          insert! @primary_key => key, column => val       # create a row
-        else raise "No such row with primary key #{key.inspect} exists" # or raise an error
+      if @pk_map.include? key
+        # if we do, check if the row has a value in the column
+        row = @table[@pk_map[key]]
+        # if it does, can we overwrite?
+        if row.has_attribute?(column) and not opts[:overwrite]
+          raise "Value already exists in table for primary key #{key.inspect} and column #{column.inspect}"
+        end
+        # if so, overwrite
+        row[column] = val
+      else # Check if we have the key in our pk_map. if not,
+        if opts[:create_row] # if we can create rows,
+          insert! @primary_key => key, column => val # create a row
+        else
+          raise "No such row with primary key #{key.inspect} exists" # or raise an error
         end
       end
-      # if we do, check if the row has a value in the column
-      row = @table[@pk_map[key]]
-      # if it does, can we overwrite?
-      if row.has_attribute?(column) and not opts[:overwrite]
-        raise "Value already exists in table for primary key #{key.inspect} and column #{column.inspect}"
-      end
-      # if so, overwrite
-      row[column] = val
     end
     self
   end
