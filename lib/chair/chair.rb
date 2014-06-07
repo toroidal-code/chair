@@ -86,8 +86,8 @@ class Chair
   def insert!(args)
     args = process_incoming_data(args)
     if has_primary_key?
-      if args.include? primary_key
-        @pk_map[args[primary_key]] = @table.size
+      if args.include? @primary_key
+        @pk_map[args[@primary_key]] = @table.size
       else # If our table has a primary key, but can't find it in the data
         raise ArgumentError, 'Missing primary key in record to be inserted'
       end
